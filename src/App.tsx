@@ -261,7 +261,11 @@ function App() {
       let errorMessage = apiError.message || 'Failed to process receipt'
       
       // Enhance error messages based on error code or axios error status
-      if (apiError.code === 'NETWORK_ERROR') {
+      if (apiError.code === 'NOT_A_RECEIPT') {
+        errorMessage = apiError.message || 'This does not appear to be a receipt or invoice. Please upload an image of a receipt.'
+      } else if (apiError.code === 'NO_ITEMS_FOUND') {
+        errorMessage = 'Could not identify any items on the receipt. Please ensure the image is clear and shows the complete receipt.'
+      } else if (apiError.code === 'NETWORK_ERROR') {
         errorMessage = 'Network error. Please check your internet connection and try again.'
       } else if (apiError.code === 'VALIDATION_ERROR') {
         errorMessage = 'Invalid file. Please ensure you upload a valid receipt image (JPEG, PNG, or WebP).'

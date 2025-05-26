@@ -61,14 +61,33 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
 
   // Handle failed extraction
   if (result.status === 'failed') {
+    const isNotReceipt = result.error?.code === 'NOT_A_RECEIPT';
+    const isNoItems = result.error?.code === 'NO_ITEMS_FOUND';
+    
     return (
       <div className="w-full max-w-2xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
           <svg className="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Extraction Failed</h3>
-          <p className="text-red-600 mb-6">{result.error?.message || 'Unable to extract receipt details'}</p>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">
+            {isNotReceipt ? 'Not a Receipt' : 'Extraction Failed'}
+          </h3>
+          <p className="text-red-600 mb-2">{result.error?.message || 'Unable to extract receipt details'}</p>
+          
+          {/* Add helpful tips */}
+          {(isNotReceipt || isNoItems) && (
+            <div className="mt-4 mb-6 bg-red-100 rounded-md p-4 text-left max-w-md mx-auto">
+              <p className="text-sm font-medium text-red-800 mb-2">Tips for successful extraction:</p>
+              <ul className="text-sm text-red-700 space-y-1">
+                <li>• Upload a clear photo of a receipt or invoice</li>
+                <li>• Ensure the entire receipt is visible</li>
+                <li>• Avoid blurry or dark images</li>
+                <li>• Receipt should show items, prices, and total</li>
+              </ul>
+            </div>
+          )}
+          
           <div className="flex justify-center space-x-3">
             <button
               onClick={onTryAgain}

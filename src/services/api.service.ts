@@ -47,11 +47,30 @@ axiosInstance.interceptors.response.use(
     // Handle different error scenarios
     if (error.response) {
       // Server responded with error status
-      const apiError: ApiError = error.response.data || {
-        code: 'UNKNOWN_ERROR',
-        message: error.message,
-        timestamp: new Date().toISOString(),
-      };
+      const responseData = error.response.data as {
+        error_code?: string;
+        message?: string;
+        details?: unknown;
+        timestamp?: string;
+      } | ApiError;
+      
+      // Handle backend error response structure
+      let apiError: ApiError;
+      if (responseData && 'error_code' in responseData) {
+        // Backend sends error_code, frontend expects code
+        apiError = {
+          code: responseData.error_code || 'UNKNOWN_ERROR',
+          message: responseData.message || error.message,
+          details: responseData.details as Record<string, unknown>,
+          timestamp: responseData.timestamp || new Date().toISOString(),
+        };
+      } else {
+        apiError = responseData as ApiError || {
+          code: 'UNKNOWN_ERROR',
+          message: error.message,
+          timestamp: new Date().toISOString(),
+        };
+      }
       
       // Log error in development
       if (import.meta.env.DEV) {
