@@ -1,0 +1,1 @@
+export { PrintableReceipt } from './PrintableReceipt'; 

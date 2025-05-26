@@ -1,0 +1,148 @@
+import React from 'react';
+import { ReceiptResponse } from '../../types/receipt.types';
+import { formatFileSize } from '../../utils/file.utils';
+import { printReceipt } from '../../utils/print.utils';
+import { ExportDropdown } from './ExportDropdown';
+
+interface MetadataAndActionsProps {
+  result: ReceiptResponse;
+  file: File;
+  onNewReceipt: () => void;
+  formatDate: (dateString: string) => string;
+  formatCurrency: (amount: number, currency: string) => string;
+}
+
+export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({ 
+  result, 
+  file, 
+  onNewReceipt,
+  formatDate,
+  formatCurrency
+}) => {
+  const handlePrint = () => {
+    if (result.extractedData) {
+      printReceipt({
+        data: result.extractedData,
+        metadata: result.metadata,
+        formatDate,
+        formatCurrency
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Metadata and Warnings Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Extraction Details */}
+        {result.metadata && (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                Extraction Details
+              </h4>
+            </div>
+            <div className="p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Confidence</span>
+                <div className="flex items-center gap-2">
+                  <div className={`h-2 w-16 bg-gray-200 rounded-full overflow-hidden`}>
+                    <div 
+                      className={`h-full transition-all ${
+                        result.metadata.confidence >= 0.8 ? 'bg-green-500' : 
+                        result.metadata.confidence >= 0.6 ? 'bg-yellow-500' : 
+                        'bg-red-500'
+                      }`}
+                      style={{ width: `${result.metadata.confidence * 100}%` }}
+                    />
+                  </div>
+                  <span className={`text-sm font-medium ${
+                    result.metadata.confidence >= 0.8 ? 'text-green-600' : 
+                    result.metadata.confidence >= 0.6 ? 'text-yellow-600' : 
+                    'text-red-600'
+                  }`}>
+                    {Math.round(result.metadata.confidence * 100)}%
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Processing Time</span>
+                <span className="text-sm text-gray-900">{result.metadata.processingTimeMs}ms</span>
+              </div>
+              {result.metadata.aiModel && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">AI Model</span>
+                  <span className="text-sm text-gray-900 font-mono text-xs">{result.metadata.aiModel}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Warnings */}
+        {result.metadata?.warnings && result.metadata.warnings.length > 0 && (
+          <div className="bg-yellow-50 rounded-lg border border-yellow-200 overflow-hidden">
+            <div className="bg-yellow-100 px-4 py-2 border-b border-yellow-200">
+              <h4 className="text-sm font-semibold text-yellow-800 uppercase tracking-wider">
+                Warnings
+              </h4>
+            </div>
+            <div className="p-4">
+              <ul className="text-sm text-yellow-700 space-y-1">
+                {result.metadata.warnings.map((warning, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-yellow-600 mr-2">•</span>
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Actions Bar */}
+      <div className="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="text-sm text-gray-600 flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>{file.name}</span>
+          <span className="text-gray-400">({formatFileSize(file.size)})</span>
+        </div>
+        <div className="flex gap-2">
+          {/* Export Dropdown */}
+          {result.extractedData && (
+            <ExportDropdown
+              data={result.extractedData}
+              formatDate={formatDate}
+              formatCurrency={formatCurrency}
+            />
+          )}
+          
+          {/* Print Button */}
+          <button
+            onClick={handlePrint}
+            className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print
+          </button>
+          
+          {/* Process Another Receipt Button */}
+          <button
+            onClick={onNewReceipt}
+            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Process Another Receipt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}; 
