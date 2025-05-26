@@ -6,7 +6,8 @@ import { ExportDropdown } from './ExportDropdown';
 
 interface MetadataAndActionsProps {
   result: ReceiptResponse;
-  file: File;
+  file: File | null;
+  imageUrl?: string;
   onNewReceipt: () => void;
   formatDate: (dateString: string) => string;
   formatCurrency: (amount: number, currency: string) => string;
@@ -15,15 +16,16 @@ interface MetadataAndActionsProps {
 export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({ 
   result, 
   file, 
+  imageUrl,
   onNewReceipt,
   formatDate,
   formatCurrency
 }) => {
   const handlePrint = () => {
-    if (result.extractedData) {
+    if (result.status !== 'failed') {
       printReceipt({
-        data: result.extractedData,
-        metadata: result.metadata,
+        data: result,
+        imageUrl: imageUrl,
         formatDate,
         formatCurrency
       });
@@ -35,7 +37,7 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
       {/* Metadata and Warnings Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Extraction Details */}
-        {result.metadata && (
+        {(result.extraction_metadata || result.confidence_score !== undefined) && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
               <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
@@ -43,36 +45,40 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
               </h4>
             </div>
             <div className="p-4 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Confidence</span>
-                <div className="flex items-center gap-2">
-                  <div className={`h-2 w-16 bg-gray-200 rounded-full overflow-hidden`}>
-                    <div 
-                      className={`h-full transition-all ${
-                        result.metadata.confidence >= 0.8 ? 'bg-green-500' : 
-                        result.metadata.confidence >= 0.6 ? 'bg-yellow-500' : 
-                        'bg-red-500'
-                      }`}
-                      style={{ width: `${result.metadata.confidence * 100}%` }}
-                    />
+              {result.confidence_score !== undefined && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Confidence</span>
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-16 bg-gray-200 rounded-full overflow-hidden`}>
+                      <div 
+                        className={`h-full transition-all ${
+                          result.confidence_score >= 0.8 ? 'bg-green-500' : 
+                          result.confidence_score >= 0.6 ? 'bg-yellow-500' : 
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${result.confidence_score * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-sm font-medium ${
+                      result.confidence_score >= 0.8 ? 'text-green-600' : 
+                      result.confidence_score >= 0.6 ? 'text-yellow-600' : 
+                      'text-red-600'
+                    }`}>
+                      {Math.round(result.confidence_score * 100)}%
+                    </span>
                   </div>
-                  <span className={`text-sm font-medium ${
-                    result.metadata.confidence >= 0.8 ? 'text-green-600' : 
-                    result.metadata.confidence >= 0.6 ? 'text-yellow-600' : 
-                    'text-red-600'
-                  }`}>
-                    {Math.round(result.metadata.confidence * 100)}%
-                  </span>
                 </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Processing Time</span>
-                <span className="text-sm text-gray-900">{result.metadata.processingTimeMs}ms</span>
-              </div>
-              {result.metadata.aiModel && (
+              )}
+              {result.extraction_metadata?.processing_time && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Processing Time</span>
+                  <span className="text-sm text-gray-900">{result.extraction_metadata.processing_time}ms</span>
+                </div>
+              )}
+              {result.extraction_metadata?.ai_model && (
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">AI Model</span>
-                  <span className="text-sm text-gray-900 font-mono text-xs">{result.metadata.aiModel}</span>
+                  <span className="text-sm text-gray-900 font-mono text-xs">{result.extraction_metadata.ai_model}</span>
                 </div>
               )}
             </div>
@@ -80,7 +86,7 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
         )}
 
         {/* Warnings */}
-        {result.metadata?.warnings && result.metadata.warnings.length > 0 && (
+        {result.extraction_metadata?.warnings && result.extraction_metadata.warnings.length > 0 && (
           <div className="bg-yellow-50 rounded-lg border border-yellow-200 overflow-hidden">
             <div className="bg-yellow-100 px-4 py-2 border-b border-yellow-200">
               <h4 className="text-sm font-semibold text-yellow-800 uppercase tracking-wider">
@@ -89,7 +95,7 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
             </div>
             <div className="p-4">
               <ul className="text-sm text-yellow-700 space-y-1">
-                {result.metadata.warnings.map((warning, index) => (
+                {result.extraction_metadata.warnings.map((warning, index) => (
                   <li key={index} className="flex items-start">
                     <span className="text-yellow-600 mr-2">•</span>
                     <span>{warning}</span>
@@ -107,14 +113,14 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
           <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span>{file.name}</span>
-          <span className="text-gray-400">({formatFileSize(file.size)})</span>
+          <span>{file?.name || 'Receipt'}</span>
+          {file && <span className="text-gray-400">({formatFileSize(file.size)})</span>}
         </div>
         <div className="flex gap-2">
           {/* Export Dropdown */}
-          {result.extractedData && (
+          {result.status !== 'failed' && (
             <ExportDropdown
-              data={result.extractedData}
+              data={result}
               formatDate={formatDate}
               formatCurrency={formatCurrency}
             />
@@ -124,6 +130,7 @@ export const MetadataAndActions: React.FC<MetadataAndActionsProps> = ({
           <button
             onClick={handlePrint}
             className="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-2"
+            disabled={result.status === 'failed'}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

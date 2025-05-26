@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 interface ReceiptImageViewerProps {
   imageUrl?: string;
-  fileName: string;
+  fileName?: string;
   onImageError?: () => void;
 }
 
@@ -39,7 +39,7 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
           <div className="relative w-full group">
             <img
               src={imageUrl}
-              alt={`Receipt: ${fileName}`}
+              alt={`Receipt: ${fileName || 'Image'}`}
               className={`w-full h-auto object-contain object-top bg-white rounded-lg shadow-md transition-all duration-200 ${
                 isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in hover:shadow-lg'
               }`}
@@ -63,7 +63,7 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <p className="text-base text-gray-500 font-medium mb-1">Receipt image unavailable</p>
-              <p className="text-sm text-gray-400">{fileName}</p>
+              <p className="text-sm text-gray-400">{fileName || 'No image available'}</p>
             </div>
           </div>
         )}
@@ -77,7 +77,7 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
         >
           <img
             src={imageUrl}
-            alt={`Receipt: ${fileName}`}
+            alt={`Receipt: ${fileName || 'Image'}`}
             className="max-w-[90vw] max-h-[90vh] object-contain"
             onClick={(e) => e.stopPropagation()}
           />

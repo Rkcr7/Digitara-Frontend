@@ -3,7 +3,7 @@ import { ReceiptResponse } from '../../types/receipt.types';
 import { exportAsJSON, exportAsText } from '../../utils/export.utils';
 
 interface ExportDropdownProps {
-  data: NonNullable<ReceiptResponse['extractedData']>;
+  data: ReceiptResponse;
   formatDate: (dateString: string) => string;
   formatCurrency: (amount: number, currency: string) => string;
 }

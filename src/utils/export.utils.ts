@@ -1,47 +1,49 @@
 import { ReceiptResponse } from '../types/receipt.types';
 
 interface ExportReceiptOptions {
-  data: NonNullable<ReceiptResponse['extractedData']>;
+  data: ReceiptResponse;
   formatDate: (dateString: string) => string;
   formatCurrency?: (amount: number, currency: string) => string;
   filename?: string;
 }
 
-// Create clean data structure for export (excluding processing metadata)
-const createCleanReceiptData = (data: NonNullable<ReceiptResponse['extractedData']>, formatDate: (dateString: string) => string) => {
-  return {
+// Create clean data structure for export (including metadata when relevant)
+const createCleanReceiptData = (data: ReceiptResponse, formatDate: (dateString: string) => string) => {
+  const cleanData = {
     merchant: {
-      name: data.merchantName,
-      address: data.merchantAddress || null,
-      phone: data.merchantPhone || null
+      name: data.vendor_name || 'Unknown',
+      receiptNumber: data.receipt_number || null
     },
     transaction: {
-      date: formatDate(data.date),
-      receiptNumber: data.receiptNumber || null,
-      paymentMethod: data.paymentMethod || null
+      date: data.date ? formatDate(data.date) : 'Unknown',
+      paymentMethod: data.payment_method || null
     },
-    items: data.items?.map((item, index) => ({
+    items: data.receipt_items?.map((item, index) => ({
       itemNumber: index + 1,
-      name: item.name,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      totalPrice: item.totalPrice
+      name: item.item_name,
+      quantity: item.quantity || 1,
+      price: item.item_cost
     })) || [],
     financial: {
       subtotal: data.subtotal,
       tax: {
-        rate: data.tax.rate,
-        amount: data.tax.amount,
-        type: data.tax.type || 'Tax'
+        rate: data.tax_details?.tax_rate || 'Unknown',
+        amount: data.tax || 0,
+        type: data.tax_details?.tax_type || 'Tax',
+        inclusive: data.tax_details?.tax_inclusive
       },
-      additionalCharges: data.additionalCharges?.map(charge => ({
-        name: charge.name,
-        amount: charge.amount
-      })) || [],
-      total: data.total,
-      currency: data.currency
+      total: data.total || 0,
+      currency: data.currency || 'USD'
+    },
+    metadata: {
+      status: data.status,
+      confidenceScore: data.confidence_score,
+      extractedAt: data.extracted_at,
+      warnings: data.extraction_metadata?.warnings || []
     }
   };
+
+  return cleanData;
 };
 
 // Export as JSON
@@ -52,7 +54,7 @@ export const exportAsJSON = ({ data, formatDate, filename }: ExportReceiptOption
   const blob = new Blob([jsonContent], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   
-  const defaultFilename = `receipt-${data.receiptNumber || 'export'}-${new Date().toISOString().split('T')[0]}.json`;
+  const defaultFilename = `receipt-${data.receipt_number || 'export'}-${new Date().toISOString().split('T')[0]}.json`;
   
   const link = document.createElement('a');
   link.href = url;
@@ -74,15 +76,31 @@ export const exportAsText = ({ data, formatDate, formatCurrency, filename }: Exp
   textContent += 'RECEIPT DETAILS\n';
   textContent += '='.repeat(50) + '\n\n';
   
+  // Extraction Status
+  if (cleanData.metadata.status !== 'success') {
+    textContent += `STATUS: ${cleanData.metadata.status.toUpperCase()}\n`;
+    if (cleanData.metadata.confidenceScore) {
+      textContent += `CONFIDENCE: ${Math.round(cleanData.metadata.confidenceScore * 100)}%\n`;
+    }
+    textContent += '\n';
+  }
+  
+  // Warnings if any
+  if (cleanData.metadata.warnings.length > 0) {
+    textContent += 'WARNINGS:\n';
+    textContent += '-'.repeat(25) + '\n';
+    cleanData.metadata.warnings.forEach(warning => {
+      textContent += `• ${warning}\n`;
+    });
+    textContent += '\n';
+  }
+  
   // Merchant Information
   textContent += 'MERCHANT INFORMATION\n';
   textContent += '-'.repeat(25) + '\n';
   textContent += `Business Name: ${cleanData.merchant.name}\n`;
-  if (cleanData.merchant.address) {
-    textContent += `Address: ${cleanData.merchant.address}\n`;
-  }
-  if (cleanData.merchant.phone) {
-    textContent += `Phone: ${cleanData.merchant.phone}\n`;
+  if (cleanData.merchant.receiptNumber) {
+    textContent += `Receipt Number: ${cleanData.merchant.receiptNumber}\n`;
   }
   textContent += '\n';
   
@@ -90,9 +108,6 @@ export const exportAsText = ({ data, formatDate, formatCurrency, filename }: Exp
   textContent += 'TRANSACTION DETAILS\n';
   textContent += '-'.repeat(25) + '\n';
   textContent += `Date: ${cleanData.transaction.date}\n`;
-  if (cleanData.transaction.receiptNumber) {
-    textContent += `Receipt Number: ${cleanData.transaction.receiptNumber}\n`;
-  }
   if (cleanData.transaction.paymentMethod) {
     textContent += `Payment Method: ${cleanData.transaction.paymentMethod}\n`;
   }
@@ -102,17 +117,16 @@ export const exportAsText = ({ data, formatDate, formatCurrency, filename }: Exp
   if (cleanData.items.length > 0) {
     textContent += 'ITEMS PURCHASED\n';
     textContent += '-'.repeat(25) + '\n';
-    textContent += `${'#'.padStart(3)} ${'Item'.padEnd(30)} ${'Qty'.padStart(6)} ${'Unit Price'.padStart(12)} ${'Total'.padStart(12)}\n`;
-    textContent += '-'.repeat(65) + '\n';
+    textContent += `${'#'.padStart(3)} ${'Item'.padEnd(35)} ${'Qty'.padStart(6)} ${'Price'.padStart(12)}\n`;
+    textContent += '-'.repeat(60) + '\n';
     
     cleanData.items.forEach((item) => {
       const itemNum = item.itemNumber.toString().padStart(3);
-      const itemName = item.name.length > 30 ? item.name.substring(0, 27) + '...' : item.name.padEnd(30);
+      const itemName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name.padEnd(35);
       const qty = item.quantity.toString().padStart(6);
-      const unitPrice = formatCurrency ? formatCurrency(item.unitPrice, cleanData.financial.currency).padStart(12) : item.unitPrice.toString().padStart(12);
-      const total = formatCurrency ? formatCurrency(item.totalPrice, cleanData.financial.currency).padStart(12) : item.totalPrice.toString().padStart(12);
+      const price = formatCurrency ? formatCurrency(item.price, cleanData.financial.currency).padStart(12) : item.price.toFixed(2).padStart(12);
       
-      textContent += `${itemNum} ${itemName} ${qty} ${unitPrice} ${total}\n`;
+      textContent += `${itemNum} ${itemName} ${qty} ${price}\n`;
     });
     textContent += '\n';
   }
@@ -120,19 +134,27 @@ export const exportAsText = ({ data, formatDate, formatCurrency, filename }: Exp
   // Financial Summary
   textContent += 'FINANCIAL SUMMARY\n';
   textContent += '-'.repeat(25) + '\n';
-  textContent += `Subtotal: ${formatCurrency ? formatCurrency(cleanData.financial.subtotal, cleanData.financial.currency).padStart(20) : cleanData.financial.subtotal.toString().padStart(20)}\n`;
-  textContent += `${cleanData.financial.tax.type} (${cleanData.financial.tax.rate}%): ${formatCurrency ? formatCurrency(cleanData.financial.tax.amount, cleanData.financial.currency).padStart(12) : cleanData.financial.tax.amount.toString().padStart(12)}\n`;
-  
-  // Additional charges
-  if (cleanData.financial.additionalCharges.length > 0) {
-    cleanData.financial.additionalCharges.forEach(charge => {
-      textContent += `${charge.name}: ${formatCurrency ? formatCurrency(charge.amount, cleanData.financial.currency).padStart(20) : charge.amount.toString().padStart(20)}\n`;
-    });
+  if (cleanData.financial.subtotal !== undefined) {
+    textContent += `Subtotal: ${formatCurrency ? formatCurrency(cleanData.financial.subtotal, cleanData.financial.currency).padStart(20) : cleanData.financial.subtotal.toFixed(2).padStart(20)}\n`;
   }
   
+  const taxLabel = `${cleanData.financial.tax.type} (${cleanData.financial.tax.rate})`;
+  textContent += `${taxLabel}: ${formatCurrency ? formatCurrency(cleanData.financial.tax.amount, cleanData.financial.currency).padStart(12) : cleanData.financial.tax.amount.toFixed(2).padStart(12)}\n`;
+  
   textContent += '-'.repeat(35) + '\n';
-  textContent += `TOTAL: ${formatCurrency ? formatCurrency(cleanData.financial.total, cleanData.financial.currency).padStart(28) : cleanData.financial.total.toString().padStart(28)}\n`;
+  textContent += `TOTAL: ${formatCurrency ? formatCurrency(cleanData.financial.total, cleanData.financial.currency).padStart(28) : cleanData.financial.total.toFixed(2).padStart(28)}\n`;
   textContent += '='.repeat(50) + '\n';
+  
+  // Metadata Footer
+  textContent += '\nEXTRACTION DETAILS\n';
+  textContent += '-'.repeat(25) + '\n';
+  textContent += `Status: ${cleanData.metadata.status}\n`;
+  if (cleanData.metadata.confidenceScore) {
+    textContent += `Confidence Score: ${Math.round(cleanData.metadata.confidenceScore * 100)}%\n`;
+  }
+  if (cleanData.metadata.extractedAt) {
+    textContent += `Extracted At: ${cleanData.metadata.extractedAt}\n`;
+  }
   
   // Footer
   textContent += `\nExported on: ${new Date().toLocaleDateString('en-US', {
@@ -146,7 +168,7 @@ export const exportAsText = ({ data, formatDate, formatCurrency, filename }: Exp
   const blob = new Blob([textContent], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   
-  const defaultFilename = `receipt-${data.receiptNumber || 'export'}-${new Date().toISOString().split('T')[0]}.txt`;
+  const defaultFilename = `receipt-${data.receipt_number || 'export'}-${new Date().toISOString().split('T')[0]}.txt`;
   
   const link = document.createElement('a');
   link.href = url;

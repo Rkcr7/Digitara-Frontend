@@ -5,13 +5,15 @@ import { MetadataAndActions } from './MetadataAndActions';
 
 interface ExtractedDataPanelProps {
   result: ReceiptResponse;
-  file: File;
+  file: File | null;
+  imageUrl?: string;
   onNewReceipt: () => void;
 }
 
 export const ExtractedDataPanel: React.FC<ExtractedDataPanelProps> = ({ 
   result, 
   file,
+  imageUrl,
   onNewReceipt 
 }) => {
   const formatDate = (dateString: string) => {
@@ -40,8 +42,10 @@ export const ExtractedDataPanel: React.FC<ExtractedDataPanelProps> = ({
     }
   };
 
-  const data = result.extractedData;
-  if (!data) {
+  // Check if we have any extracted data
+  const hasData = result.status !== 'failed' && result.vendor_name;
+  
+  if (!hasData) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
@@ -75,7 +79,7 @@ export const ExtractedDataPanel: React.FC<ExtractedDataPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-6">
         <div className="space-y-6">
           <DataSections 
-            data={data}
+            data={result}
             formatDate={formatDate}
             formatCurrency={formatCurrency}
           />
@@ -83,6 +87,7 @@ export const ExtractedDataPanel: React.FC<ExtractedDataPanelProps> = ({
           <MetadataAndActions 
             result={result}
             file={file}
+            imageUrl={imageUrl}
             onNewReceipt={onNewReceipt}
             formatDate={formatDate}
             formatCurrency={formatCurrency}

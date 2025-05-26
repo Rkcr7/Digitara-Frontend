@@ -4,17 +4,17 @@ import { ReceiptResponse } from '../types/receipt.types';
 import { PrintableReceipt } from '../components/Print/PrintableReceipt';
 
 interface PrintReceiptOptions {
-  data: NonNullable<ReceiptResponse['extractedData']>;
-  metadata?: ReceiptResponse['metadata'];
+  data: ReceiptResponse;
+  imageUrl?: string;
   formatDate: (dateString: string) => string;
   formatCurrency: (amount: number, currency: string) => string;
 }
 
-export const printReceipt = ({ data, metadata, formatDate, formatCurrency }: PrintReceiptOptions) => {
+export const printReceipt = ({ data, imageUrl, formatDate, formatCurrency }: PrintReceiptOptions) => {
   // Create the printable receipt component
   const printableReceiptElement = React.createElement(PrintableReceipt, {
     data,
-    metadata,
+    imageUrl,
     formatDate,
     formatCurrency,
   });
@@ -50,6 +50,8 @@ export const printReceipt = ({ data, metadata, formatDate, formatCurrency }: Pri
           .print\\:border { border-width: 1px !important; }
           .print\\:border-gray-300 { border-color: #d1d5db !important; }
           .print\\:p-4 { padding: 1rem !important; }
+          .page-break-before { page-break-before: always; }
+          @page { margin: 0.5in; }
         }
         @page { margin: 1in; }
         body { font-family: system-ui, -apple-system, sans-serif; }

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { ReceiptResponse } from '../../types/receipt.types';
 import { createImagePreview } from '../../utils/file.utils';
+import { apiService } from '../../services/api.service';
 import { UI_SETTINGS } from '../../config/ui-settings';
 import { ReceiptImageViewer } from './ReceiptImageViewer';
 import { ExtractedDataPanel } from './ExtractedDataPanel';
 
 interface ExtractionResultsProps {
   result: ReceiptResponse;
-  file: File;
+  file: File | null;
   onNewReceipt: () => void;
   onTryAgain: () => void;
 }
@@ -22,17 +23,41 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
   const { layout } = UI_SETTINGS;
 
   useEffect(() => {
-    // Create preview URL from the file
-    const url = createImagePreview(file);
-    setImageUrl(url);
+    // Use backend image URL if available, otherwise create preview from file
+    if (result.image_url) {
+      const fullUrl = apiService.getImageUrl(result.image_url);
+      setImageUrl(fullUrl);
+      
+      // Test if the backend image URL is accessible
+      const img = new Image();
+      img.onload = () => {
+        // Image loaded successfully, keep using backend URL
+        setImageUrl(fullUrl);
+      };
+      img.onerror = () => {
+        // Backend image failed, fallback to file preview if available
+        console.warn('Backend image failed to load:', fullUrl);
+        if (file) {
+          const url = createImagePreview(file);
+          setImageUrl(url);
+        } else {
+          setImageUrl(undefined); // No image available
+        }
+      };
+      img.src = fullUrl;
+    } else if (file) {
+      // Create preview URL from the file
+      const url = createImagePreview(file);
+      setImageUrl(url);
 
-    // Cleanup
-    return () => {
-      if (url) {
-        URL.revokeObjectURL(url);
-      }
-    };
-  }, [file]);
+      // Cleanup
+      return () => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      };
+    }
+  }, [file, result.image_url]);
 
   // Handle failed extraction
   if (result.status === 'failed') {
@@ -75,7 +100,7 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
           >
             <ReceiptImageViewer 
               imageUrl={imageUrl}
-              fileName={file.name}
+              fileName={file?.name}
             />
           </div>
 
@@ -87,6 +112,7 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
             <ExtractedDataPanel
               result={result}
               file={file}
+              imageUrl={imageUrl}
               onNewReceipt={onNewReceipt}
             />
           </div>
