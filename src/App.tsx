@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiService } from './services/api.service'
 import { HealthCheckResponse } from './types/receipt.types'
 import { FileUpload } from './components/FileUpload'
+import { FilePreview } from './components/FilePreview'
 
 function App() {
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
@@ -32,6 +33,16 @@ function App() {
   const handleFileSelect = (file: File) => {
     console.log('File selected:', file);
     setSelectedFile(file);
+  }
+
+  const handleCancel = () => {
+    setSelectedFile(null);
+  }
+
+  const handleConfirm = () => {
+    console.log('Processing receipt:', selectedFile);
+    // TODO: Process the receipt in the next checkpoint
+    alert('Receipt processing will be implemented in the next checkpoint');
   }
 
   return (
@@ -65,20 +76,11 @@ function App() {
               disabled={loading || !!error}
             />
           ) : (
-            <div className="text-center">
-              <p className="text-lg font-medium text-gray-700 mb-2">
-                File selected: {selectedFile.name}
-              </p>
-              <button
-                onClick={() => setSelectedFile(null)}
-                className="text-blue-600 hover:text-blue-700 underline text-sm"
-              >
-                Choose a different file
-              </button>
-              <p className="mt-4 text-gray-500 text-sm">
-                File preview component will be added in the next checkpoint
-              </p>
-            </div>
+            <FilePreview
+              file={selectedFile}
+              onCancel={handleCancel}
+              onConfirm={handleConfirm}
+            />
           )}
         </div>
       </div>
