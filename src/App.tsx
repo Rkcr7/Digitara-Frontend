@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { apiService } from './services/api.service'
 import { HealthCheckResponse } from './types/receipt.types'
+import { FileUpload } from './components/FileUpload'
 
 function App() {
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
     // Test API connection on component mount
@@ -27,39 +29,57 @@ function App() {
     checkApiHealth()
   }, [])
 
+  const handleFileSelect = (file: File) => {
+    console.log('File selected:', file);
+    setSelectedFile(file);
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
           Receipt Extractor
         </h1>
+        <p className="text-center text-gray-600 mb-8">
+          Upload a receipt image to extract information automatically
+        </p>
         
-        {/* API Health Check Status */}
-        <div className="mb-8 p-4 bg-gray-100 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">API Status:</h2>
+        {/* API Health Check Status - Minimized */}
+        <div className="mb-6">
           {loading ? (
-            <p className="text-gray-600">Checking API connection...</p>
+            <p className="text-center text-sm text-gray-500">Connecting to backend...</p>
           ) : error ? (
-            <div className="text-red-600">
-              <p className="font-medium">Connection Error:</p>
-              <p className="text-sm">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+              <p className="text-sm text-red-600">{error}</p>
             </div>
-          ) : healthStatus ? (
-            <div className="text-green-600">
-              <p className="font-medium">✓ API Connected</p>
-              <p className="text-sm text-gray-600">
-                Status: {healthStatus.status} | Version: {healthStatus.version}
-              </p>
-              <p className="text-sm text-gray-600">
-                Supported formats: {healthStatus.supportedFormats?.join(', ')}
-              </p>
-            </div>
+          ) : healthStatus && healthStatus.status === 'healthy' ? (
+            <p className="text-center text-sm text-green-600">✓ Backend connected</p>
           ) : null}
         </div>
 
-        {/* Placeholder for future components */}
-        <div className="text-center text-gray-500">
-          <p>Receipt upload component will be added here in the next checkpoint.</p>
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-md p-8">
+          {!selectedFile ? (
+            <FileUpload 
+              onFileSelect={handleFileSelect}
+              disabled={loading || !!error}
+            />
+          ) : (
+            <div className="text-center">
+              <p className="text-lg font-medium text-gray-700 mb-2">
+                File selected: {selectedFile.name}
+              </p>
+              <button
+                onClick={() => setSelectedFile(null)}
+                className="text-blue-600 hover:text-blue-700 underline text-sm"
+              >
+                Choose a different file
+              </button>
+              <p className="mt-4 text-gray-500 text-sm">
+                File preview component will be added in the next checkpoint
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
