@@ -3,12 +3,16 @@ import { apiService } from './services/api.service'
 import { HealthCheckResponse } from './types/receipt.types'
 import { FileUpload } from './components/FileUpload'
 import { FilePreview } from './components/FilePreview'
+import { ExtractionProgress } from './components/ExtractionProgress'
 
 function App() {
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingStatus, setProcessingStatus] = useState<'uploading' | 'processing' | 'extracting' | 'finalizing'>('uploading')
+  const [processingProgress, setProcessingProgress] = useState<number>(0)
 
   useEffect(() => {
     // Test API connection on component mount
@@ -37,12 +41,49 @@ function App() {
 
   const handleCancel = () => {
     setSelectedFile(null);
+    setIsProcessing(false);
+    setProcessingStatus('uploading');
+    setProcessingProgress(0);
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (!selectedFile) return;
+    
     console.log('Processing receipt:', selectedFile);
-    // TODO: Process the receipt in the next checkpoint
-    alert('Receipt processing will be implemented in the next checkpoint');
+    setIsProcessing(true);
+    
+    // Simulate processing with different stages
+    try {
+      // Uploading stage
+      setProcessingStatus('uploading');
+      setProcessingProgress(0);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setProcessingProgress(25);
+      
+      // Processing stage
+      setProcessingStatus('processing');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setProcessingProgress(50);
+      
+      // Extracting stage
+      setProcessingStatus('extracting');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setProcessingProgress(75);
+      
+      // Finalizing stage
+      setProcessingStatus('finalizing');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setProcessingProgress(100);
+      
+      // Complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      alert('Receipt processing will be fully implemented in the next checkpoint');
+      handleCancel();
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+      alert('Error processing receipt');
+      handleCancel();
+    }
   }
 
   return (
@@ -69,20 +110,33 @@ function App() {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-md p-8">
-          {!selectedFile ? (
-            <FileUpload 
-              onFileSelect={handleFileSelect}
-              disabled={loading || !!error}
-            />
-          ) : (
-            <FilePreview
-              file={selectedFile}
-              onCancel={handleCancel}
-              onConfirm={handleConfirm}
-            />
-          )}
-        </div>
+        {isProcessing ? (
+          <ExtractionProgress
+            status={processingStatus}
+            progress={processingProgress}
+            message={
+              processingStatus === 'uploading' ? 'Securely uploading your receipt...' :
+              processingStatus === 'processing' ? 'Optimizing image for extraction...' :
+              processingStatus === 'extracting' ? 'Using AI to extract receipt details...' :
+              'Almost done! Preparing your results...'
+            }
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-8">
+            {!selectedFile ? (
+              <FileUpload 
+                onFileSelect={handleFileSelect}
+                disabled={loading || !!error}
+              />
+            ) : (
+              <FilePreview
+                file={selectedFile}
+                onCancel={handleCancel}
+                onConfirm={handleConfirm}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
