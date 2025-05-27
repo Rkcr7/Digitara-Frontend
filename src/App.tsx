@@ -21,7 +21,8 @@ type ProcessingStage = keyof typeof PROCESSING_STAGES;
 // Session storage keys
 const SESSION_KEYS = {
   SELECTED_FILE: 'receipt_extractor_selected_file',
-  LAST_RESULT: 'receipt_extractor_last_result'
+  LAST_RESULT: 'receipt_extractor_last_result',
+  IMAGE_URL: 'receipt_extractor_image_url'
 } as const;
 
 function App() {
@@ -42,9 +43,9 @@ function App() {
   const [processingStatus, setProcessingStatus] = useState<ProcessingStage>('uploading')
   const [processingProgress, setProcessingProgress] = useState<number>(0)
   const [processingError, setProcessingError] = useState<string | null>(null)
-  
-  // Results state
+    // Results state
   const [extractionResult, setExtractionResult] = useState<ReceiptResponse | null>(null)
+  const [sessionImageUrl, setSessionImageUrl] = useState<string | null>(null)
   
   // Abort controller for canceling requests
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -78,7 +79,6 @@ function App() {
       clearInterval(slowCheckInterval)
     }
   }, [])
-
   // Load saved session data on mount
   useEffect(() => {
     try {
@@ -89,11 +89,17 @@ function App() {
         setExtractionResult(result)
         console.log('Restored previous extraction result')
       }
+
+      // Load saved image URL if available
+      const savedImageUrl = sessionStorage.getItem(SESSION_KEYS.IMAGE_URL)
+      if (savedImageUrl) {
+        setSessionImageUrl(savedImageUrl)
+        console.log('Restored previous image URL')
+      }
     } catch (error) {
       console.error('Failed to restore session:', error)
     }
   }, [])
-
   // Save extraction results to session
   useEffect(() => {
     if (extractionResult) {
@@ -101,6 +107,14 @@ function App() {
         // Save ALL extraction results, not just successful ones
         sessionStorage.setItem(SESSION_KEYS.LAST_RESULT, JSON.stringify(extractionResult))
         console.log(`Saved ${extractionResult.status} extraction result to session`)
+        
+        // Save image URL if available from the extraction result
+        if (extractionResult.image_url && extractionResult.status !== 'failed') {
+          const fullImageUrl = apiService.getImageUrl(extractionResult.image_url)
+          sessionStorage.setItem(SESSION_KEYS.IMAGE_URL, fullImageUrl)
+          setSessionImageUrl(fullImageUrl)
+          console.log('Saved image URL to session:', fullImageUrl)
+        }
       } catch (error) {
         console.error('Failed to save result to session:', error)
       }
@@ -149,7 +163,6 @@ function App() {
     const progress = stageConfig.min + (percentage / 100) * (stageConfig.max - stageConfig.min)
     setProcessingProgress(Math.min(Math.round(progress), stageConfig.max))
   }, [])
-
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
     console.log('File selected:', file.name, 'Size:', file.size)
@@ -158,10 +171,11 @@ function App() {
     setProcessingError(null)
     setRetryCount(0)
     
-    // Clear saved result when new file is selected
+    // Clear saved result and image URL when new file is selected
     sessionStorage.removeItem(SESSION_KEYS.LAST_RESULT)
+    sessionStorage.removeItem(SESSION_KEYS.IMAGE_URL)
+    setSessionImageUrl(null)
   }, [])
-
   // Cancel/Reset everything
   const handleCancel = useCallback(() => {
     // Abort any ongoing request
@@ -178,9 +192,11 @@ function App() {
     setExtractionResult(null)
     setProcessingError(null)
     setRetryCount(0)
+    setSessionImageUrl(null)
     
     // Clear session storage
     sessionStorage.removeItem(SESSION_KEYS.LAST_RESULT)
+    sessionStorage.removeItem(SESSION_KEYS.IMAGE_URL)
   }, [])
 
   // Process receipt with actual API call
@@ -353,13 +369,13 @@ function App() {
             <AppHeader isCompact={true} />
           </div>
 
-          {/* Results */}
-          <div className="flex-1 px-4 pb-4 overflow-hidden">
+          {/* Results */}          <div className="flex-1 px-4 pb-4 overflow-hidden">
             <ExtractionResults
               result={extractionResult}
               file={selectedFile}
               onNewReceipt={handleNewReceipt}
               onTryAgain={handleTryAgain}
+              sessionImageUrl={sessionImageUrl}
             />
           </div>
         </div>

@@ -4,6 +4,8 @@ interface ReceiptImageViewerProps {
   imageUrl?: string;
   fileName?: string;
   onImageError?: () => void;
+  onImageLoad?: () => void;
+  isLoading?: boolean;
   isMobile?: boolean;
 }
 
@@ -11,14 +13,19 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
   imageUrl, 
   fileName,
   onImageError,
+  onImageLoad,
+  isLoading = false,
   isMobile = false
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
-
   const handleImageError = () => {
     setImageError(true);
     onImageError?.();
+  };
+
+  const handleImageLoad = () => {
+    onImageLoad?.();
   };
 
   const toggleZoom = () => {
@@ -37,18 +44,59 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
           Original Receipt
         </h3>
       </div>
-      
-      <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-2' : 'p-4'}`}>
-        {imageUrl && !imageError ? (
+        <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-2' : 'p-4'}`}>
+        {/* Loading Animation */}
+        {isLoading && imageUrl && (
+          <div className={`flex items-center justify-center ${isMobile ? 'h-32 sm:h-40' : 'h-48'}`}>
+            <div className="bg-white rounded-lg p-6 sm:p-8 lg:p-12 text-center shadow-md animate-pulse">
+              {/* Receipt-shaped skeleton loader */}
+              <div className={`mx-auto mb-4 bg-gray-200 rounded ${
+                isMobile ? 'w-16 h-20 sm:w-20 sm:h-24' : 'w-24 h-32'
+              }`}></div>
+              
+              {/* Spinning indicator */}
+              <div className={`mx-auto mb-3 border-gray-300 border-t-blue-500 rounded-full animate-spin ${
+                isMobile ? 'w-6 h-6 border-2' : 'w-8 h-8 border-4'
+              }`}></div>
+              
+              {/* Bouncing dots */}
+              <div className="flex justify-center space-x-1">
+                <div className={`bg-blue-500 rounded-full animate-bounce ${
+                  isMobile ? 'w-2 h-2' : 'w-3 h-3'
+                }`} style={{ animationDelay: '0ms' }}></div>
+                <div className={`bg-blue-500 rounded-full animate-bounce ${
+                  isMobile ? 'w-2 h-2' : 'w-3 h-3'
+                }`} style={{ animationDelay: '150ms' }}></div>
+                <div className={`bg-blue-500 rounded-full animate-bounce ${
+                  isMobile ? 'w-2 h-2' : 'w-3 h-3'
+                }`} style={{ animationDelay: '300ms' }}></div>
+              </div>
+              
+              <p className={`text-gray-600 font-medium mt-3 ${
+                isMobile ? 'text-sm' : 'text-base'
+              }`}>Loading image...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Image Display */}
+        {imageUrl && !imageError && (
           <div className="relative w-full group">
             <img
               src={imageUrl}
               alt={`Receipt: ${fileName || 'Image'}`}
-              className={`w-full h-auto object-contain object-top bg-white rounded-lg shadow-md transition-all duration-200 ${
+              className={`w-full h-auto object-contain object-top bg-white rounded-lg shadow-md transition-all duration-300 ${
                 isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in hover:shadow-lg'
-              } ${isMobile ? 'max-h-[170px] sm:max-h-[200px] md:max-h-[230px]' : ''}`}
+              } ${isMobile ? 'max-h-[170px] sm:max-h-[200px] md:max-h-[230px]' : ''} ${
+                isLoading ? 'opacity-0' : 'opacity-100'
+              }`}
               onError={handleImageError}
+              onLoad={handleImageLoad}
               onClick={toggleZoom}
+              style={{ 
+                transition: 'opacity 0.3s ease-in-out',
+                display: isLoading ? 'none' : 'block'
+              }}
             />
             
             {/* Zoom indicator - Hide on very small mobile screens */}
@@ -61,7 +109,10 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
               <span className="hidden sm:inline">{isZoomed ? 'Zoom out' : 'Zoom in'}</span>
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* No Image Available */}
+        {(!imageUrl || imageError) && !isLoading && (
           <div className={`flex items-center justify-center ${isMobile ? 'h-32 sm:h-40' : 'h-48'}`}>
             <div className="bg-white rounded-lg p-6 sm:p-8 lg:p-12 text-center">
               <svg className={`mx-auto text-gray-300 mb-3 sm:mb-4 ${

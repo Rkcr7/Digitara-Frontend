@@ -10,52 +10,75 @@ interface ExtractionResultsProps {
   file: File | null;
   onNewReceipt: () => void;
   onTryAgain: () => void;
+  sessionImageUrl?: string | null;
 }
 
 export const ExtractionResults: React.FC<ExtractionResultsProps> = ({ 
   result, 
   file,
   onNewReceipt,
-  onTryAgain
+  onTryAgain,
+  sessionImageUrl
 }) => {
   const [imageUrl, setImageUrl] = useState<string | undefined>();
+  const [imageLoading, setImageLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Use backend image URL if available, otherwise create preview from file
-    if (result.image_url) {
-      const fullUrl = apiService.getImageUrl(result.image_url);
-      setImageUrl(fullUrl);
-      
-      // Test if the backend image URL is accessible
-      const img = new Image();
-      img.onload = () => {
-        // Image loaded successfully, keep using backend URL
-        setImageUrl(fullUrl);
-      };
-      img.onerror = () => {
-        // Backend image failed, fallback to file preview if available
-        console.warn('Backend image failed to load:', fullUrl);
-        if (file) {
-          const url = createImagePreview(file);
-          setImageUrl(url);
-        } else {
-          setImageUrl(undefined); // No image available
-        }
-      };
-      img.src = fullUrl;
-    } else if (file) {
-      // Create preview URL from the file
+    let cleanup: (() => void) | undefined;
+    
+    // Start loading
+    setImageLoading(true);
+    
+    // CORRECT Priority order: local file preview (fastest), then session URL, then backend URL (complete fallback)
+    if (file) {
+      // 1st Priority: Local file preview for instant loading
       const url = createImagePreview(file);
       setImageUrl(url);
-
-      // Cleanup
-      return () => {
+      setImageLoading(false); // Local preview loads instantly
+      console.log('Using local file preview for instant loading');
+      
+      // Setup cleanup for local preview URL
+      cleanup = () => {
         if (url) {
           URL.revokeObjectURL(url);
         }
       };
+    } else if (sessionImageUrl) {
+      // 2nd Priority: Session image URL if no file is available (after page refresh)
+      setImageUrl(sessionImageUrl);
+      // Keep loading true until image actually loads
+      console.log('Using session image URL (no local file available):', sessionImageUrl);
+    } else if (result.image_url) {
+      // 3rd Priority: Backend image URL as final fallback (if session URL is lost or unavailable)
+      const fullUrl = apiService.getImageUrl(result.image_url);
+      setImageUrl(fullUrl);
+      // Keep loading true until image actually loads
+      console.log('Using backend image URL as complete fallback:', fullUrl);
+      
+      // Test if the backend image URL is accessible
+      const img = new Image();
+      img.onerror = () => {
+        console.warn('Backend image failed to load:', fullUrl);
+        setImageUrl(undefined); // No image available
+        setImageLoading(false);
+      };
+      img.src = fullUrl;
+    } else {
+      // No image available
+      setImageLoading(false);
     }
-  }, [file, result.image_url]);
+
+    return cleanup;
+  }, [file, result.image_url, sessionImageUrl]);
+
+  // Handle image load completion
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+  };
 
   // Handle failed extraction
   if (result.status === 'failed') {
@@ -110,13 +133,15 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
     <div className="w-full h-full overflow-hidden">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full">
         {/* Mobile and Tablet Layout (flex-col) */}
-        <div className="flex flex-col xl:hidden h-full">
-          {/* Mobile Image Panel - Collapsible */}
+        <div className="flex flex-col xl:hidden h-full">          {/* Mobile Image Panel - Collapsible */}
           <div className="h-48 sm:h-56 md:h-64 border-b border-gray-200 overflow-hidden flex-shrink-0">
             <ReceiptImageViewer 
               imageUrl={imageUrl}
               fileName={file?.name}
               isMobile={true}
+              isLoading={imageLoading}
+              onImageLoad={handleImageLoad}
+              onImageError={handleImageError}
             />
           </div>
 
@@ -133,13 +158,15 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
         </div>
 
         {/* Desktop Layout (flex-row) - XL and above */}
-        <div className="hidden xl:flex xl:flex-row h-full">
-          {/* Desktop Image Panel */}
+        <div className="hidden xl:flex xl:flex-row h-full">          {/* Desktop Image Panel */}
           <div className="w-2/5 border-r border-gray-200 overflow-hidden flex-shrink-0">
             <ReceiptImageViewer 
               imageUrl={imageUrl}
               fileName={file?.name}
               isMobile={false}
+              isLoading={imageLoading}
+              onImageLoad={handleImageLoad}
+              onImageError={handleImageError}
             />
           </div>
 
