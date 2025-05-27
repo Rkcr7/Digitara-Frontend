@@ -48,19 +48,14 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
         {/* Loading Animation */}
         {isLoading && imageUrl && (
           <div className={`flex items-center justify-center ${isMobile ? 'h-32 sm:h-40' : 'h-48'}`}>
-            <div className="bg-white rounded-lg p-6 sm:p-8 lg:p-12 text-center shadow-md animate-pulse">
+            <div className="bg-white rounded-lg p-6 sm:p-8 lg:p-12 text-center shadow-md">
               {/* Receipt-shaped skeleton loader */}
               <div className={`mx-auto mb-4 bg-gray-200 rounded ${
                 isMobile ? 'w-16 h-20 sm:w-20 sm:h-24' : 'w-24 h-32'
               }`}></div>
               
-              {/* Spinning indicator */}
-              <div className={`mx-auto mb-3 border-gray-300 border-t-blue-500 rounded-full animate-spin ${
-                isMobile ? 'w-6 h-6 border-2' : 'w-8 h-8 border-4'
-              }`}></div>
-              
               {/* Bouncing dots */}
-              <div className="flex justify-center space-x-1">
+              <div className="flex justify-center space-x-1 my-3">
                 <div className={`bg-blue-500 rounded-full animate-bounce ${
                   isMobile ? 'w-2 h-2' : 'w-3 h-3'
                 }`} style={{ animationDelay: '0ms' }}></div>
@@ -156,4 +151,4 @@ export const ReceiptImageViewer: React.FC<ReceiptImageViewerProps> = ({
       )}
     </div>
   );
-}; 
+};

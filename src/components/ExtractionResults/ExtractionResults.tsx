@@ -29,13 +29,12 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
     // Start loading
     setImageLoading(true);
     
-    // CORRECT Priority order: local file preview (fastest), then session URL, then backend URL (complete fallback)
+    // Priority order: local file preview (fastest), then session URL or backend URL
     if (file) {
       // 1st Priority: Local file preview for instant loading
       const url = createImagePreview(file);
       setImageUrl(url);
       setImageLoading(false); // Local preview loads instantly
-      console.log('Using local file preview for instant loading');
       
       // Setup cleanup for local preview URL
       cleanup = () => {
@@ -47,14 +46,10 @@ export const ExtractionResults: React.FC<ExtractionResultsProps> = ({
       // 2nd Priority: Session image URL if no file is available (after page refresh)
       setImageUrl(sessionImageUrl);
       // Keep loading true until image actually loads
-      console.log('Using session image URL (no local file available):', sessionImageUrl);
     } else if (result.image_url) {
       // 3rd Priority: Backend image URL as final fallback (if session URL is lost or unavailable)
       const fullUrl = apiService.getImageUrl(result.image_url);
-      setImageUrl(fullUrl);
-      // Keep loading true until image actually loads
-      console.log('Using backend image URL as complete fallback:', fullUrl);
-      
+      setImageUrl(fullUrl);      
       // Test if the backend image URL is accessible
       const img = new Image();
       img.onerror = () => {

@@ -58,14 +58,11 @@ function App() {
   useEffect(() => {
     const cleanup = addNetworkListener(
       () => {
-        console.log('Network connection restored')
         setIsNetworkOnline(true)
         setHealthError(null)
       },
       () => {
-        console.log('Network connection lost')
         setIsNetworkOnline(false)
-        setHealthError('No internet connection')
       }
     )
     
@@ -87,14 +84,12 @@ function App() {
       if (savedResult) {
         const result = JSON.parse(savedResult) as ReceiptResponse
         setExtractionResult(result)
-        console.log('Restored previous extraction result')
       }
 
       // Load saved image URL if available
       const savedImageUrl = sessionStorage.getItem(SESSION_KEYS.IMAGE_URL)
       if (savedImageUrl) {
         setSessionImageUrl(savedImageUrl)
-        console.log('Restored previous image URL')
       }
     } catch (error) {
       console.error('Failed to restore session:', error)
@@ -106,14 +101,12 @@ function App() {
       try {
         // Save ALL extraction results, not just successful ones
         sessionStorage.setItem(SESSION_KEYS.LAST_RESULT, JSON.stringify(extractionResult))
-        console.log(`Saved ${extractionResult.status} extraction result to session`)
         
         // Save image URL if available from the extraction result
         if (extractionResult.image_url && extractionResult.status !== 'failed') {
           const fullImageUrl = apiService.getImageUrl(extractionResult.image_url)
           sessionStorage.setItem(SESSION_KEYS.IMAGE_URL, fullImageUrl)
           setSessionImageUrl(fullImageUrl)
-          console.log('Saved image URL to session:', fullImageUrl)
         }
       } catch (error) {
         console.error('Failed to save result to session:', error)
@@ -165,7 +158,6 @@ function App() {
   }, [])
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
-    console.log('File selected:', file.name, 'Size:', file.size)
     setSelectedFile(file)
     setExtractionResult(null)
     setProcessingError(null)
@@ -256,7 +248,6 @@ function App() {
       await new Promise(resolve => setTimeout(resolve, 500))
       
       // Success!
-      console.log('Extraction successful:', result)
       setExtractionResult(result)
       setIsProcessing(false)
       setRetryCount(0)
@@ -268,7 +259,6 @@ function App() {
       // Handle different error types
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          console.log('Request was cancelled')
           return
         }
       }
@@ -331,7 +321,6 @@ function App() {
   const handleConfirm = useCallback(async () => {
     if (!selectedFile) return
     
-    console.log('Starting receipt processing...')
     await processReceipt(selectedFile, false)
   }, [selectedFile, updateProgress])
 
@@ -347,7 +336,6 @@ function App() {
       return
     }
     
-    console.log(`Retrying receipt processing (attempt ${newRetryCount}/${MAX_RETRIES})...`)
     await processReceipt(selectedFile, true)
   }, [selectedFile, retryCount])
 
