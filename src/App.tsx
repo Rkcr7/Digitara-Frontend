@@ -5,6 +5,7 @@ import { FileUpload } from './components/FileUpload'
 import { FilePreview } from './components/FilePreview'
 import { ExtractionProgress } from './components/ExtractionProgress'
 import { ExtractionResults } from './components/ExtractionResults'
+import { AppHeader } from './components/AppHeader'
 import { isOnline, addNetworkListener, isSlowConnection } from './utils/network.utils'
 
 // Processing stages with progress percentages
@@ -348,35 +349,8 @@ function App() {
         // Full screen results view
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="flex-shrink-0 py-4 px-4">
-            <h1 className="text-3xl font-bold text-gray-800 text-center">
-              Receipt Extractor
-            </h1>
-            <p className="text-center text-gray-600 mt-1">
-              Upload a receipt image to extract information automatically
-            </p>
-            
-            {/* Health Status */}
-            <div className="mt-4">
-              {!isNetworkOnline ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center max-w-4xl mx-auto">
-                  <p className="text-sm text-red-600 font-medium">
-                    <span className="inline-block mr-2">🔌</span>
-                    No internet connection
-                  </p>
-                </div>
-              ) : healthLoading ? (
-                <p className="text-center text-sm text-gray-500">Connecting to backend...</p>
-              ) : healthError ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center max-w-4xl mx-auto">
-                  <p className="text-sm text-red-600">{healthError}</p>
-                </div>
-              ) : healthStatus && healthStatus.status === 'healthy' ? (
-                <p className="text-center text-sm text-green-600">
-                  ✓ Backend connected ({healthStatus.version})
-                </p>
-              ) : null}
-            </div>
+          <div className="flex-shrink-0 px-4">
+            <AppHeader isCompact={true} />
           </div>
 
           {/* Results */}
@@ -391,18 +365,13 @@ function App() {
         </div>
       ) : (
         // Regular scrollable view for upload/processing
-        <div className="py-8">
+        <div className="py-2">
           <div className="max-w-4xl mx-auto px-4">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
-              Receipt Extractor
-            </h1>
-            <p className="text-center text-gray-600 mb-8">
-              Upload a receipt image to extract information automatically
-            </p>
+            <AppHeader />
             
-            {/* API Health Check Status */}
+            {/* Connection Status - Only show critical errors */}
             <div className="mb-6">
-              {!isNetworkOnline ? (
+              {!isNetworkOnline && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                   <p className="text-sm text-red-600 font-medium">
                     <span className="inline-block mr-2">🔌</span>
@@ -412,32 +381,11 @@ function App() {
                     Please check your internet connection and try again
                   </p>
                 </div>
-              ) : healthLoading ? (
-                <p className="text-center text-sm text-gray-500">
-                  <span className="inline-block animate-spin mr-2">⟳</span>
-                  Connecting to backend...
-                </p>
-              ) : healthError ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                  <p className="text-sm text-red-600 font-medium">{healthError}</p>
-                  <p className="text-xs text-red-500 mt-1">
-                    Please ensure the backend is running on port 3000
-                  </p>
-                </div>
-              ) : healthStatus && healthStatus.status === 'healthy' ? (
-                <div className="text-center">
-                  <p className="text-sm text-green-600">
-                    ✓ Backend connected
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Version {healthStatus.version} • {healthStatus.supportedFormats?.join(', ')}
-                  </p>
-                </div>
-              ) : null}
+              )}
               
               {/* Slow Network Warning */}
-              {isNetworkOnline && isSlowNetwork && !healthLoading && (
-                <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+              {isNetworkOnline && isSlowNetwork && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
                   <p className="text-sm text-yellow-700">
                     <span className="inline-block mr-2">⚠️</span>
                     Slow network detected - processing may take longer than usual
@@ -467,18 +415,22 @@ function App() {
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-md p-8">
+              <>
                 {!selectedFile ? (
-                  <FileUpload 
-                    onFileSelect={handleFileSelect}
-                    disabled={!isApiAvailable}
-                  />
+                  <div className="bg-white rounded-lg shadow-md p-8">
+                    <FileUpload 
+                      onFileSelect={handleFileSelect}
+                      disabled={!isApiAvailable}
+                    />
+                  </div>
                 ) : (
-                  <FilePreview
-                    file={selectedFile}
-                    onCancel={handleCancel}
-                    onConfirm={handleConfirm}
-                  />
+                  <div className="h-[calc(100vh-280px)] min-h-[500px]">
+                    <FilePreview
+                      file={selectedFile}
+                      onCancel={handleCancel}
+                      onConfirm={handleConfirm}
+                    />
+                  </div>
                 )}
                 
                 {/* Show processing error if any */}
@@ -505,7 +457,7 @@ function App() {
                     </p>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
