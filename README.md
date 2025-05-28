@@ -23,6 +23,8 @@
 - [Application Flow](#-application-flow)
 - [Components Overview](#-components-overview)
 - [Configuration](#-configuration)
+- [API Integration](#-api-integration)
+- [Test Assets (`test/`)](#test-assets-test)
 - [Development](#-development)
 - [Troubleshooting](#-troubleshooting)
 
@@ -138,6 +140,11 @@ The **Receipt Extractor Frontend** is a modern, responsive web application that 
 </div>
 
 <div align="center">
+  <img src="public/not-reciept.png" alt="Not a receipt" width="600">
+  <p><em>Uploading an image that is not a receipt</em></p>
+</div>
+
+<div align="center">
   <img src="public/results.png" alt="Results" width="600">
   <p><em>Extracted Receipt Data Display</em></p>
 </div>
@@ -145,6 +152,11 @@ The **Receipt Extractor Frontend** is a modern, responsive web application that 
 <div align="center">
   <img src="public/warnings.png" alt="Low Confidence Warnings" width="600">
   <p><em>Results with Low Confidence Warnings</em></p>
+</div>
+
+<div align="center">
+  <img src="public/error-extracting.png" alt="Error while extracting result" width="600">
+  <p><em>Error while extracting result from image with defects</em></p>
 </div>
 
 ---
@@ -266,6 +278,11 @@ receipt-extractor-frontend/
 │   ├── App.tsx               # Main application component
 │   ├── main.tsx              # Application entry point
 │   └── index.css             # Global styles (Tailwind)
+├── test/                     # Test assets for various scenarios
+│   ├── inavlid_format/       # Files with invalid formats (e.g., PDF, TXT)
+│   ├── non_receipts/         # Images that are not receipts
+│   ├── skewed_receipts/      # Receipt images with perspective distortions
+│   └── valid_reciepts/       # Valid receipt images for testing
 ├── .nvmrc                    # Node version specification
 ├── package.json              # Dependencies and scripts
 ├── tailwind.config.js        # Tailwind CSS configuration
@@ -439,6 +456,29 @@ The API service provides detailed error information with specific error codes:
 
 ---
 
+## 🧪 Test Assets (`test/`)
+
+The `test/` directory contains various assets to facilitate thorough testing of the application's receipt processing capabilities. These assets are organized into subdirectories based on the type of test case they represent:
+
+-   **`test/inavlid_format/`**: Contains files that are not in the supported image formats (e.g., PDF, TXT). These are used to test the application's file type validation and error handling for invalid formats.
+    -   `1.pdf`
+    -   `2.txt`
+-   **`test/non_receipts/`**: Includes images that are valid image formats but do not represent receipts (e.g., pictures of landscapes, animals). These help test the AI's ability to correctly identify and reject non-receipt images.
+    -   `1.webp`
+    -   `2.png`
+-   **`test/skewed_receipts/`**: Contains receipt images that are skewed, rotated, or have perspective distortions. These are used to evaluate the robustness of the OCR and data extraction algorithms under challenging conditions.
+    -   `1.png`
+    -   `2.png`
+    -   `3.png`
+-   **`test/valid_reciepts/`**: A collection of valid receipt images in supported formats. These serve as standard test cases for verifying the accuracy and completeness of the data extraction process.
+    -   `1.jpg`
+    -   `2.jpg`
+    -   `3.png`
+
+Using these diverse test assets ensures that the application is resilient and performs reliably across a wide range of input scenarios.
+
+---
+
 ## 💻 Development
 
 ### Available Scripts
@@ -488,4 +528,3 @@ npm run lint
   - Compress images before upload
   - Check network speed indicator
   - Use production build for better performance
-
