@@ -1,9 +1,9 @@
-# <img src="public/logo.png" alt="Receipt Extractor Logo" width="60" height="60" align="left"> Receipt Extractor Frontend
+# <img src="public/logo.png" alt="Digitara Logo" width="60" height="60" align="left"> Digitara Frontend
 
-> 🚀 **AI-Powered Receipt Processing Web Application** - Transform receipt images into structured data instantly with an intuitive, modern interface.
+> 🚀 **Intelligent Document Processing Web Application** - Transform receipt images into structured data instantly with enterprise-grade AI and an intuitive, modern interface.
 
 <div align="center">
-  <img src="public/logo.png" alt="Receipt Extractor" width="120" height="120">
+  <img src="public/logo.png" alt="Digitara" width="120" height="120">
   
   [![React](https://img.shields.io/badge/React-19.0.0-blue.svg)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue.svg)](https://www.typescriptlang.org/)
@@ -33,7 +33,7 @@
 
 ## 🎯 Overview
 
-The **Receipt Extractor Frontend** is a modern, responsive web application that provides an intuitive interface for uploading receipt images and extracting structured data using AI technology. Built with React, TypeScript, and Tailwind CSS, it offers a seamless user experience with real-time processing feedback, comprehensive error handling, and multiple export options.
+The **Digitara Frontend** is a modern, responsive web application that provides an intuitive interface for uploading receipt images and extracting structured data using advanced AI technology. Built with React, TypeScript, and Tailwind CSS, it offers a seamless user experience with real-time processing feedback, comprehensive error handling, and multiple export options.
 
 ### 🎨 Key Highlights
 
@@ -64,12 +64,12 @@ The **Receipt Extractor Frontend** is a modern, responsive web application that 
 - File metadata display (name, size, type, modified date)
 - Cancel and re-select options
 
-#### 3. **AI-Powered Extraction**
+#### 3. **AI-Powered Document Intelligence**
 - Real-time processing with 4-stage progress tracking:
-  - 📤 Uploading (0-30%)
-  - ⚙️ Processing (30-60%)
-  - 🤖 Extracting (60-90%)
-  - ✅ Finalizing (90-100%)
+  - 🔒 Securing & Encrypting (0-30%)
+  - ⚙️ Advanced Algorithm Processing (30-60%)
+  - 🤖 AI Intelligence Analysis (60-90%)
+  - ✅ Structured Data Finalization (90-100%)
 - Visual progress indicators and status messages
 - Smooth animations and transitions
 
@@ -188,7 +188,7 @@ The **Receipt Extractor Frontend** is a modern, responsive web application that 
 ```bash
 # 1. Clone and enter the directory
 git clone <repository-url>
-cd receipt-extractor-frontend-ai-engineer-Rkcr7
+cd digitara-frontend
 
 # 2. Install dependencies
 npm install
@@ -205,14 +205,14 @@ npm run dev
 - **npm**: v10+ or equivalent package manager
 - **Backend API**: The receipt extraction backend must be running (default: `http://localhost:3000`)
 
-> ⚠️ **Important**: This frontend application requires the Receipt Extractor Backend to be running. Please ensure you have set up and started the backend service before running the frontend.
+> ⚠️ **Important**: This frontend application requires the Digitara Backend to be running. Please ensure you have set up and started the backend service before running the frontend.
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd receipt-extractor-frontend-ai-engineer-Rkcr7
+   cd digitara-frontend
    ```
 
 2. **Set Node version** (recommended)
@@ -252,7 +252,7 @@ These samples demonstrate various receipt formats, currencies, and languages tha
 ## 📁 Project Structure
 
 ```
-receipt-extractor-frontend/
+digitara-frontend/
 ├── public/                    # Static assets
 │   ├── favicon.ico           # Application favicon
 │   └── logo.png              # Application logo
@@ -528,3 +528,9 @@ npm run lint
   - Compress images before upload
   - Check network speed indicator
   - Use production build for better performance
+
+---
+
+## 📜 Disclaimer
+
+This project was originally created as part of a technical assessment, but all code, logic, and design presented here are my own work, rebranded and enhanced independently.

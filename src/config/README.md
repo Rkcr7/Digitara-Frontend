@@ -1,6 +1,6 @@
 # UI Configuration Settings
 
-This directory contains configuration files that allow you to easily customize the appearance and behavior of the Receipt Extractor UI.
+This directory contains configuration files that allow you to easily customize the appearance and behavior of the Digitara UI.
 
 ## `ui-settings.ts`
 

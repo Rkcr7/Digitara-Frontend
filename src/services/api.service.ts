@@ -3,7 +3,6 @@ import {
   ReceiptResponse,
   ExtractReceiptRequest,
   ApiError,
-  SupportedCurrency,
   HealthCheckResponse,
 } from '../types/receipt.types';
 
@@ -144,25 +143,7 @@ class ApiService {
     }
   }
 
-  /**
-   * Get list of supported currencies
-   * @returns Promise with array of supported currencies
-   */
-  async getSupportedCurrencies(): Promise<SupportedCurrency[]> {
-    try {
-      const response = await axiosInstance.get<SupportedCurrency[]>(
-        '/extract-receipt-details/currencies',
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw error as ApiError;
-    }
-  }
+
 
   /**
    * Check the health status of the receipt extraction service
