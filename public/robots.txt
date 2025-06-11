@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://your-digitara-url.com/sitemap.xml
+Sitemap: https://digitara.cloud/sitemap.xml
