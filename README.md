@@ -97,6 +97,12 @@ For more details on the backend architecture and API, please visit the [backend 
 - **Print Support**: Print-friendly layout with optimized styling
 - **Session Storage**: Automatic saving of results
 
+###  SEO and Social Sharing
+- **Meta Tags**: Optimized with keywords and descriptions for better search engine visibility.
+- **Open Graph & Twitter Cards**: Enhanced sharing experience on social media platforms with rich previews.
+- **JSON-LD Structured Data**: Provides structured data to search engines for improved indexing.
+- **Robots.txt & Sitemap.xml**: Includes `robots.txt` to guide web crawlers and a `sitemap.xml` for better site indexing.
+
 ### 🛡️ Advanced Features
 
 #### 6. **Error Handling & Recovery**
@@ -538,6 +544,21 @@ npm run lint
 
 ---
 
-## 📜 Disclaimer
+## 🚀 Deployment
+
+This application is designed for continuous deployment to **Netlify** directly from the `main` branch.
+
+1.  **Connect to GitHub:** In your Netlify dashboard, import a new project and connect it to your `Digitara-Frontend` GitHub repository.
+2.  **Build Settings:** Netlify will automatically detect the correct settings:
+    *   **Build command:** `npm run build`
+    *   **Publish directory:** `dist`
+3.  **Environment Variable:** In the site's "Build & deploy" -> "Environment" settings, add the following variable:
+    *   **Key:** `VITE_API_BASE_URL`
+    *   **Value:** The URL of your deployed Digitara backend (e.g., from Google Cloud Run).
+4.  **Deploy:** Trigger the deployment. All subsequent pushes to the `main` branch will automatically deploy a new version.
+
+---
+
+##  Disclaimer
 
 This project was originally created as part of a technical assessment, but all code, logic, and design presented here are my own work, rebranded and enhanced independently.
