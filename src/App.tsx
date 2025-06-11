@@ -6,6 +6,7 @@ import { FilePreview } from './components/FilePreview'
 import { ExtractionProgress } from './components/ExtractionProgress'
 import { ExtractionResults } from './components/ExtractionResults'
 import { AppHeader } from './components/AppHeader'
+import { TestImage } from './components/TestOptions'
 import { isOnline, addNetworkListener, isSlowConnection } from './utils/network.utils'
 
 // Processing stages with progress percentages
@@ -168,6 +169,30 @@ function App() {
     sessionStorage.removeItem(SESSION_KEYS.IMAGE_URL)
     setSessionImageUrl(null)
   }, [])
+
+  // Handle test image selection
+  const handleTestImageSelect = useCallback(async (testImage: TestImage) => {
+    try {
+      // Fetch the test image from public directory
+      const response = await fetch(testImage.path)
+      if (!response.ok) {
+        throw new Error('Failed to fetch test image')
+      }
+      
+      // Convert to blob and create File object
+      const blob = await response.blob()
+      const file = new File([blob], testImage.name.toLowerCase().replace(/\s+/g, '_') + '.' + testImage.type.split('/')[1], {
+        type: testImage.type,
+        lastModified: Date.now()
+      })
+      
+      // Use the same handler as regular file selection
+      handleFileSelect(file)
+    } catch (error) {
+      console.error('Error loading test image:', error)
+      alert('Failed to load test image. Please try again.')
+    }
+  }, [handleFileSelect])
   // Cancel/Reset everything
   const handleCancel = useCallback(() => {
     // Abort any ongoing request
@@ -424,8 +449,9 @@ function App() {
               <>
                 {!selectedFile ? (
                   <div className="bg-white rounded-lg shadow-md p-8">
-                    <FileUpload 
+                    <FileUpload
                       onFileSelect={handleFileSelect}
+                      onTestImageSelect={handleTestImageSelect}
                       disabled={!isApiAvailable}
                     />
                   </div>
