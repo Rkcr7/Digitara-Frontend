@@ -1,5 +1,5 @@
 {
-  "name": "receipt-extractor-frontend",
+  "name": "digitara-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
-    "receipt-extractor-frontend": "file:"
+    "digitara-frontend": "file:"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

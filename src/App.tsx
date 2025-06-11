@@ -10,19 +10,19 @@ import { isOnline, addNetworkListener, isSlowConnection } from './utils/network.
 
 // Processing stages with progress percentages
 const PROCESSING_STAGES = {
-  uploading: { min: 0, max: 30, message: 'Securely uploading your receipt...' },
-  processing: { min: 30, max: 60, message: 'Optimizing image for extraction...' },
-  extracting: { min: 60, max: 90, message: 'Using AI to extract receipt details...' },
-  finalizing: { min: 90, max: 100, message: 'Almost done! Preparing your results...' }
+  uploading: { min: 0, max: 30, message: 'Securing and encrypting your document...' },
+  processing: { min: 30, max: 60, message: 'Optimizing image with advanced algorithms...' },
+  extracting: { min: 60, max: 90, message: 'Analyzing document with AI intelligence...' },
+  finalizing: { min: 90, max: 100, message: 'Finalizing structured data extraction...' }
 } as const;
 
 type ProcessingStage = keyof typeof PROCESSING_STAGES;
 
 // Session storage keys
 const SESSION_KEYS = {
-  SELECTED_FILE: 'receipt_extractor_selected_file',
-  LAST_RESULT: 'receipt_extractor_last_result',
-  IMAGE_URL: 'receipt_extractor_image_url'
+  SELECTED_FILE: 'digitara_selected_file',
+  LAST_RESULT: 'digitara_last_result',
+  IMAGE_URL: 'digitara_image_url'
 } as const;
 
 function App() {
@@ -348,7 +348,7 @@ function App() {
   const isApiAvailable = !healthLoading && !healthError && healthStatus?.status === 'healthy' && isNetworkOnline
   
   return (
-    <div className={`${extractionResult ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-gray-50`}>
+    <div className={`${extractionResult ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-digitara-light`}>
       {extractionResult ? (
         // Full screen results view
         <div className="h-full flex flex-col">

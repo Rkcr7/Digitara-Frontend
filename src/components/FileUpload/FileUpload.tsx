@@ -48,9 +48,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled =
       {...getRootProps()}
       className={`
         relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer
-        ${isDragActive 
-          ? 'border-blue-500 bg-blue-50' 
-          : 'border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100'
+        ${isDragActive
+          ? 'border-digitara-primary bg-digitara-primary/10'
+          : 'border-digitara-neutral/40 hover:border-digitara-primary/60 bg-white hover:bg-digitara-light/50'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
@@ -59,10 +59,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled =
       
       {/* Upload Icon */}
       <div className="mb-4 flex justify-center">
-        <svg 
-          className={`w-12 h-12 ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`}
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          className={`w-12 h-12 ${isDragActive ? 'text-digitara-primary' : 'text-digitara-neutral'}`}
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path 
@@ -76,18 +76,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, disabled =
 
       {/* Instructions */}
       <div className="space-y-2">
-        <p className="text-lg font-medium text-gray-700">
-          {isDragActive ? 'Drop your receipt here' : 'Drag & drop your receipt here'}
+        <p className="text-lg font-medium text-digitara-dark">
+          {isDragActive ? 'Drop your document here' : 'Drag & drop your document here'}
         </p>
-        <p className="text-sm text-gray-500">
-          or <span className="text-blue-600 underline">click to browse</span>
+        <p className="text-sm text-digitara-neutral">
+          or <span className="text-digitara-primary underline font-medium">click to browse</span>
         </p>
       </div>
 
       {/* File Requirements */}
-      <div className="mt-4 text-xs text-gray-500 space-y-1">
-        <p>Accepted formats: JPEG, PNG, WebP</p>
-        <p>Maximum file size: {formatFileSize(MAX_FILE_SIZE)}</p>
+      <div className="mt-4 text-xs text-digitara-neutral space-y-1">
+        <p>Supported formats: JPEG, PNG, WebP • Encrypted processing</p>
+        <p>Maximum file size: {formatFileSize(MAX_FILE_SIZE)} • Enterprise security</p>
       </div>
     </div>
   );
