@@ -47,6 +47,14 @@ The **Digitara Frontend** is a modern, responsive web application that provides 
 
 ---
 
+## 🔗 Associated Backend Repository
+
+This frontend application is powered by the **[Digitara Backend](https://github.com/Rkcr7/Digitara-Backend.git)**, a robust API built with NestJS. The backend handles the core logic for AI-powered document extraction, data persistence, and cloud storage.
+
+For more details on the backend architecture and API, please visit the [backend repository](https://github.com/Rkcr7/Digitara-Backend.git).
+
+---
+
 ## ✨ Features
 
 ### 🚀 Core Features
@@ -187,7 +195,7 @@ The **Digitara Frontend** is a modern, responsive web application that provides 
 
 ```bash
 # 1. Clone and enter the directory
-git clone <repository-url>
+git clone https://github.com/Rkcr7/Digitara-Frontend.git
 cd digitara-frontend
 
 # 2. Install dependencies
@@ -211,7 +219,7 @@ npm run dev
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Rkcr7/Digitara-Frontend.git
    cd digitara-frontend
    ```
 
@@ -242,10 +250,9 @@ npm run dev
    http://localhost:5173/
    ```
 
-### Testing with Sample Receipts
+### Testing with Sample Data
 
-The repository includes sample receipt images in the `sample-receipts/` directory for testing:
-These samples demonstrate various receipt formats, currencies, and languages that the system can process.
+The `test/` directory contains various assets to facilitate thorough testing of the application's receipt processing capabilities across a wide range of input scenarios. Please refer to that directory for testing materials.
 
 ---
 

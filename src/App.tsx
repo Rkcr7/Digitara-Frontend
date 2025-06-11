@@ -284,6 +284,8 @@ function App() {
         errorMessage = 'Failed to extract receipt data. The image may be unclear or not a valid receipt.'
       } else if (apiError.code === 'REQUEST_ERROR') {
         errorMessage = 'Failed to process request. Please check your connection and try again.'
+      } else if (apiError.code === 'TOO_MANY_REQUESTS') {
+        errorMessage = 'You have reached your hourly limit of 10 requests. Please try again later.';
       }
       
       // Check if we have axios error response with status

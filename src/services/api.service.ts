@@ -45,7 +45,17 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError<ApiError>) => {
     // Handle different error scenarios
     if (error.response) {
-      // Server responded with error status
+      // Handle 429 Too Many Requests specifically
+      if (error.response.status === 429) {
+        const rateLimitError: ApiError = {
+          code: 'TOO_MANY_REQUESTS',
+          message: 'You have reached your hourly request limit. Please try again later.',
+          timestamp: new Date().toISOString(),
+        };
+        return Promise.reject(rateLimitError);
+      }
+
+      // Server responded with other error status
       const responseData = error.response.data as {
         error_code?: string;
         message?: string;
