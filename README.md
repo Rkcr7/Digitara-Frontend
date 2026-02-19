@@ -1,6 +1,5 @@
 # <img src="public/logo.png" alt="Digitara Logo" width="60" height="60" align="left"> Digitara Frontend
 
-> **Live Application:** [**https://digitara.cloud**](https://digitara.cloud)
 
 > 🚀 **Intelligent Document Processing Web Application** - Transform receipt images into structured data instantly with enterprise-grade AI and an intuitive, modern interface.
 
